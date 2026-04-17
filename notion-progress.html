@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>progress</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:transparent;}
+  .wrap{padding:24px 20px;display:flex;flex-direction:column;gap:20px;max-width:420px;margin:0 auto;}
+  .row{display:flex;flex-direction:column;gap:6px;}
+  .label-row{display:flex;justify-content:space-between;align-items:baseline;}
+  .label{font-size:12px;font-weight:500;color:#888;letter-spacing:0.04em;}
+  .pct{font-size:12px;font-weight:500;color:#1a1a1a;font-variant-numeric:tabular-nums;}
+  .track{width:100%;height:7px;background:#f0f0ef;border-radius:999px;overflow:hidden;}
+  .bar{height:100%;border-radius:999px;transition:width 1s linear;}
+  .sub{font-size:11px;color:#aaa;margin-top:1px;}
+  .divider{height:0.5px;background:#e8e8e6;}
+  @media(prefers-color-scheme:dark){
+    .label{color:#888;}
+    .pct{color:#e8e8e6;}
+    .track{background:#2a2a2a;}
+    .sub{color:#666;}
+    .divider{background:#2e2e2e;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="row">
+    <div class="label-row">
+      <span class="label">year</span>
+      <span class="pct" id="yr-pct"></span>
+    </div>
+    <div class="track"><div class="bar" id="yr-bar" style="background:#7F77DD;"></div></div>
+    <div class="sub" id="yr-sub"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="label-row">
+      <span class="label">month</span>
+      <span class="pct" id="mo-pct"></span>
+    </div>
+    <div class="track"><div class="bar" id="mo-bar" style="background:#1D9E75;"></div></div>
+    <div class="sub" id="mo-sub"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="label-row">
+      <span class="label">week</span>
+      <span class="pct" id="wk-pct"></span>
+    </div>
+    <div class="track"><div class="bar" id="wk-bar" style="background:#D85A30;"></div></div>
+    <div class="sub" id="wk-sub"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row">
+    <div class="label-row">
+      <span class="label">day</span>
+      <span class="pct" id="dy-pct"></span>
+    </div>
+    <div class="track"><div class="bar" id="dy-bar" style="background:#D4537E;"></div></div>
+    <div class="sub" id="dy-sub"></div>
+  </div>
+</div>
+<script>
+function update(){
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const months=['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const wkDays=['mon','tue','wed','thu','fri','sat','sun'];
+
+  const yrStart=new Date(now.getFullYear(),0,1);
+  const yrEnd=new Date(now.getFullYear()+1,0,1);
+  const yrPct=(now-yrStart)/(yrEnd-yrStart)*100;
+  const doyTotal=Math.round((yrEnd-yrStart)/86400000);
+  const doyNow=Math.round((now-yrStart)/86400000);
+  document.getElementById('yr-pct').textContent=yrPct.toFixed(1)+'%';
+  document.getElementById('yr-bar').style.width=yrPct.toFixed(2)+'%';
+  document.getElementById('yr-sub').textContent='day '+doyNow+' of '+doyTotal+' · '+now.getFullYear();
+
+  const moStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const moEnd=new Date(now.getFullYear(),now.getMonth()+1,1);
+  const moPct=(now-moStart)/(moEnd-moStart)*100;
+  const moDays=Math.round((moEnd-moStart)/86400000);
+  document.getElementById('mo-pct').textContent=moPct.toFixed(1)+'%';
+  document.getElementById('mo-bar').style.width=moPct.toFixed(2)+'%';
+  document.getElementById('mo-sub').textContent='day '+now.getDate()+' of '+moDays+' · '+months[now.getMonth()];
+
+  const dow=(now.getDay()+6)%7;
+  const wkStart=new Date(now);wkStart.setHours(0,0,0,0);wkStart.setDate(now.getDate()-dow);
+  const wkEnd=new Date(wkStart);wkEnd.setDate(wkStart.getDate()+7);
+  const wkPct=(now-wkStart)/(wkEnd-wkStart)*100;
+  document.getElementById('wk-pct').textContent=wkPct.toFixed(1)+'%';
+  document.getElementById('wk-bar').style.width=wkPct.toFixed(2)+'%';
+  document.getElementById('wk-sub').textContent=wkDays[dow]+' · day '+(dow+1)+' of 7';
+
+  const dyStart=new Date(now);dyStart.setHours(0,0,0,0);
+  const dyEnd=new Date(dyStart);dyEnd.setDate(dyStart.getDate()+1);
+  const dyPct=(now-dyStart)/(dyEnd-dyStart)*100;
+  const h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
+  const ampm=h>=12?'pm':'am';
+  const h12=h%12||12;
+  document.getElementById('dy-pct').textContent=dyPct.toFixed(1)+'%';
+  document.getElementById('dy-bar').style.width=dyPct.toFixed(2)+'%';
+  document.getElementById('dy-sub').textContent=pad(h12)+':'+pad(m)+':'+pad(s)+' '+ampm;
+}
+update();
+setInterval(update,1000);
+</script>
+</body>
+</html>
